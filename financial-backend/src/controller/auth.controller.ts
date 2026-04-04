@@ -30,7 +30,6 @@ export async function loginController(
 export async function logoutController(
   _req: Request,
   res: Response
-): Promise<void> {
-  // Stateless JWT — logout is handled client-side by discarding the token
+): Promise<void> { 
   res.status(200).json({ success: true, message: "Logged out successfully" });
 }

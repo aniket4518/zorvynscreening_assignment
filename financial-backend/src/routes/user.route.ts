@@ -2,16 +2,21 @@ import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { requireRole } from "../middleware/rbac.middleware.js";
 import { validate } from "../middleware/validate.middleware.js";
-import { updateUserSchema, assignRoleSchema } from "../zod/user.schema.js";
+import {
+  updateUserSchema,
+  assignRoleSchema,
+  createUserSchema,
+} from "../zod/user.schema.js";
 import { paginationSchema, idParamSchema } from "../zod/common.schema.js";
 import {
-  getUsersController,
-  getOwnProfileController,
-  getUserController,
+  createUserController,
+  listUsersController,
+  getCurrentUserController,
+  getUserByIdController,
   updateUserController,
   deleteUserController,
-  assignRoleController,
-  toggleStatusController,
+  assignUserRoleController,
+  toggleUserStatusController,
 } from "../controller/user.controller.js";
 
 const router = Router();
@@ -20,21 +25,28 @@ const router = Router();
 router.use(authMiddleware);
 
 // Own profile — any role
-router.get("/me", getOwnProfileController);
+router.get("/me", getCurrentUserController);
 
 // Admin-only routes
+router.post(
+  "/",
+  requireRole("ADMIN"),
+  validate(createUserSchema, "body"),
+  createUserController,
+);
+
 router.get(
   "/",
   requireRole("ADMIN"),
   validate(paginationSchema, "query"),
-  getUsersController
+  listUsersController,
 );
 
 router.get(
   "/:id",
   requireRole("ADMIN"),
   validate(idParamSchema, "params"),
-  getUserController
+  getUserByIdController,
 );
 
 router.patch(
@@ -42,14 +54,14 @@ router.patch(
   requireRole("ADMIN"),
   validate(idParamSchema, "params"),
   validate(updateUserSchema, "body"),
-  updateUserController
+  updateUserController,
 );
 
 router.delete(
   "/:id",
   requireRole("ADMIN"),
   validate(idParamSchema, "params"),
-  deleteUserController
+  deleteUserController,
 );
 
 router.patch(
@@ -57,14 +69,14 @@ router.patch(
   requireRole("ADMIN"),
   validate(idParamSchema, "params"),
   validate(assignRoleSchema, "body"),
-  assignRoleController
+  assignUserRoleController,
 );
 
 router.patch(
   "/:id/status",
   requireRole("ADMIN"),
   validate(idParamSchema, "params"),
-  toggleStatusController
+  toggleUserStatusController,
 );
 
 export default router;

@@ -14,7 +14,7 @@ export async function register(data: RegisterInput) {
     throw ApiError.conflict("Email already registered");
   }
 
-  const hashedPwd = await hashPassword(data.password);
+  const hashedPassword = await hashPassword(data.password);
 
   // First user gets ADMIN role automatically
   const userCount = await prisma.user.count();
@@ -24,7 +24,7 @@ export async function register(data: RegisterInput) {
     data: {
       email: data.email,
       name: data.name,
-      password: hashedPwd,
+      password: hashedPassword,
       role,
     },
   });

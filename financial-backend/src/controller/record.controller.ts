@@ -1,34 +1,35 @@
 import type { Request, Response, NextFunction } from "express";
 import * as recordService from "../services/record.service.js";
 
-export async function createRecordController(
+export async function createFinancialRecordController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
-    const record = await recordService.createRecord(req.userId, req.body);
+    const record = await recordService.createFinancialRecord(
+      req.userId,
+      req.body,
+    );
     res.status(201).json({ success: true, data: record });
   } catch (error) {
     next(error);
   }
 }
 
-export async function getRecordsController(
+export async function listFinancialRecordsController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
-    const result = await recordService.getRecords(req.query as any);
+    const result = await recordService.listFinancialRecords(req.query as any);
     res.status(200).json({
       success: true,
       data: result.records,
       meta: {
-        page: result.page,
-        limit: Number(req.query.limit) || 20,
-        total: result.total,
-        totalPages: result.totalPages,
+        limit: result.limit,
+        nextCursor: result.nextCursor,
       },
     });
   } catch (error) {
@@ -36,42 +37,42 @@ export async function getRecordsController(
   }
 }
 
-export async function getRecordController(
+export async function getFinancialRecordController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const id = Number(req.params.id);
-    const record = await recordService.getRecordById(id);
+    const record = await recordService.getFinancialRecordById(id);
     res.status(200).json({ success: true, data: record });
   } catch (error) {
     next(error);
   }
 }
 
-export async function updateRecordController(
+export async function updateFinancialRecordController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const id = Number(req.params.id);
-    const record = await recordService.updateRecord(id, req.body);
+    const record = await recordService.updateFinancialRecord(id, req.body);
     res.status(200).json({ success: true, data: record });
   } catch (error) {
     next(error);
   }
 }
 
-export async function deleteRecordController(
+export async function deleteFinancialRecordController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const id = Number(req.params.id);
-    await recordService.softDeleteRecord(id);
+    await recordService.deleteFinancialRecord(id);
     res.status(204).send();
   } catch (error) {
     next(error);

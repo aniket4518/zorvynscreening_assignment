@@ -1,6 +1,7 @@
 import prisma from "../config/prisma.js";
 import { ApiError } from "../utils/api-error.js";
-import type { Role } from "../../generated/prisma/client.js";
+import { hashPassword } from "../utils/password.js";
+import type { Role, UserStatus } from "../../generated/prisma/client.js";
 
 const userSelectFields = {
   id: true,
@@ -12,24 +13,71 @@ const userSelectFields = {
   updatedAt: true,
 };
 
-export async function getAllUsers(page: number, limit: number) {
-  const skip = (page - 1) * limit;
+export async function createUser(
+  adminId: number,
+  data: {
+    email: string;
+    name: string;
+    password: string;
+    role: Role;
+    status: UserStatus;
+  },
+) {
+  const existing = await prisma.user.findUnique({
+    where: { email: data.email },
+    select: { id: true },
+  });
 
-  const [users, total] = await Promise.all([
-    prisma.user.findMany({
+  if (existing) {
+    throw ApiError.conflict("Email already registered");
+  }
+
+  const hashedPassword = await hashPassword(data.password);
+
+  const [user] = await prisma.$transaction([
+    prisma.user.create({
+      data: {
+        email: data.email,
+        name: data.name,
+        password: hashedPassword,
+        role: data.role,
+        status: data.status,
+      },
       select: userSelectFields,
-      skip,
-      take: limit,
-      orderBy: { createdAt: "desc" },
     }),
-    prisma.user.count(),
+    prisma.auditLog.create({
+      data: {
+        userId: adminId,
+        action: "CREATE_USER",
+        entity: "User",
+        details: JSON.stringify({
+          createdEmail: data.email,
+          role: data.role,
+          status: data.status,
+        }),
+      },
+    }),
   ]);
 
+  return user;
+}
+
+export async function listUsers(cursor: number | undefined, limit: number) {
+  const users = await prisma.user.findMany({
+    select: userSelectFields,
+    where: cursor ? { id: { lt: cursor } } : undefined,
+    take: limit + 1,
+    orderBy: { id: "desc" },
+  });
+
+  const hasNextPage = users.length > limit;
+  const data = hasNextPage ? users.slice(0, limit) : users;
+  const nextCursor = hasNextPage ? data[data.length - 1]?.id : null;
+
   return {
-    users,
-    total,
-    page,
-    totalPages: Math.ceil(total / limit),
+    users: data,
+    nextCursor,
+    limit,
   };
 }
 
@@ -48,7 +96,7 @@ export async function getUserById(id: number) {
 
 export async function updateUser(
   id: number,
-  data: { name?: string; email?: string }
+  data: { name?: string; email?: string },
 ) {
   await getUserById(id); // ensure exists
 
@@ -78,10 +126,10 @@ export async function deleteUser(adminId: number, id: number) {
   ]);
 }
 
-export async function assignRole(
+export async function assignUserRole(
   adminId: number,
   targetUserId: number,
-  role: Role
+  role: Role,
 ) {
   const user = await getUserById(targetUserId);
   const previousRole = user.role;
@@ -105,7 +153,7 @@ export async function assignRole(
   return updated;
 }
 
-export async function toggleStatus(adminId: number, targetUserId: number) {
+export async function toggleUserStatus(adminId: number, targetUserId: number) {
   const user = await getUserById(targetUserId);
   const newStatus = user.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
 

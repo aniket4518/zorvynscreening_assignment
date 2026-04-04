@@ -9,11 +9,11 @@ import {
 } from "../zod/record.schema.js";
 import { idParamSchema } from "../zod/common.schema.js";
 import {
-  createRecordController,
-  getRecordsController,
-  getRecordController,
-  updateRecordController,
-  deleteRecordController,
+  createFinancialRecordController,
+  listFinancialRecordsController,
+  getFinancialRecordController,
+  updateFinancialRecordController,
+  deleteFinancialRecordController,
 } from "../controller/record.controller.js";
 
 const router = Router();
@@ -25,21 +25,21 @@ router.post(
   "/",
   requireRole("ADMIN"),
   validate(createRecordSchema, "body"),
-  createRecordController
+  createFinancialRecordController,
 );
 
 router.get(
   "/",
   requireRole("ANALYST", "ADMIN"),
   validate(filterRecordsSchema, "query"),
-  getRecordsController
+  listFinancialRecordsController,
 );
 
 router.get(
   "/:id",
   requireRole("ANALYST", "ADMIN"),
   validate(idParamSchema, "params"),
-  getRecordController
+  getFinancialRecordController,
 );
 
 router.patch(
@@ -47,14 +47,14 @@ router.patch(
   requireRole("ADMIN"),
   validate(idParamSchema, "params"),
   validate(updateRecordSchema, "body"),
-  updateRecordController
+  updateFinancialRecordController,
 );
 
 router.delete(
   "/:id",
   requireRole("ADMIN"),
   validate(idParamSchema, "params"),
-  deleteRecordController
+  deleteFinancialRecordController,
 );
 
 export default router;
