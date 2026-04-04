@@ -39,6 +39,14 @@ const authLimiter = rateLimit({
 
 app.use(globalLimiter);
 
+app.get("/", (_req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is running",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.get("/api/health", (_req, res) => {
   res.status(200).json({
     success: true,
