@@ -5,10 +5,13 @@
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "scripts": {
-    "dev": "tsx src/index.ts",
+    "dev": "prisma generate && prisma db push && tsx prisma/seed.ts && tsx src/index.ts",
+    "prebuild": "prisma generate",
     "build": "tsc -b",
     "start": "node ./dist/src/index.js",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down -v"
   },
   "dependencies": {
     "express": "^5.1.0",

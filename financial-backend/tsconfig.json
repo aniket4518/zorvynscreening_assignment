@@ -6,6 +6,7 @@
     "outDir": "./dist",
     "rootDir": ".",
     "strict": true,
+    "allowJs": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -15,6 +16,6 @@
     "sourceMap": true,
     "verbatimModuleSyntax": true
   },
-  "include": ["src/**/*", "prisma/**/*"],
+  "include": ["src/**/*", "prisma/**/*", "generated/prisma/**/*", "api/**/*"],
   "exclude": ["node_modules", "dist"]
 }

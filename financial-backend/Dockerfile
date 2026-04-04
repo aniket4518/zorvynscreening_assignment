@@ -2,6 +2,9 @@
 FROM node:24-alpine AS builder
 WORKDIR /app
 
+# Prisma config requires DATABASE_URL even for client generation.
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+
 # Copy manifest files first for better layer caching
 COPY package*.json ./
 
@@ -36,5 +39,5 @@ EXPOSE 3000
 USER nodejs
 
 ENTRYPOINT ["dumb-init", "--"]
-# Run DB migrations, then start API
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/index.js"]
+# Run DB migrations, seed defaults, then start API
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/prisma/seed.js && node dist/src/index.js"]

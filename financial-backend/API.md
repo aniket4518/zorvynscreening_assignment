@@ -6,6 +6,56 @@ This document describes the currently implemented API behavior in the codebase.
 
 `/api`
 
+## Run The Project
+
+### Local Development
+
+- Command: `pnpm run dev`
+- Behavior: Generates Prisma client, pushes schema, runs seed, then starts API.
+- Default URL: `http://localhost:3000`
+
+### Docker (Single Command)
+
+- Command: `docker compose up --build`
+- File used: `docker-compose.yml`
+- Optional host port override: `API_PORT=3002 docker compose up --build`
+- Services started:
+  - `db` (PostgreSQL)
+  - `api` (backend service)
+- API URL: `http://localhost:<API_PORT>` (default `3000`)
+
+### Docker Stop
+
+- Command: `docker compose down -v`
+
+### Vercel Deployment (Budget-Friendly)
+
+- This backend can run on Vercel using `vercel.json` and `api/index.ts`.
+- Keep using a managed Postgres (Neon/Supabase) and set env vars in Vercel project settings.
+- Required env vars:
+  - `DATABASE_URL`
+  - `JWT_SECRET`
+  - `JWT_EXPIRES_IN`
+  - `NODE_ENV=production`
+- Deploy command:
+  - `vercel --prod`
+- Important:
+  - Run migrations separately before first production traffic (`npx prisma migrate deploy`).
+  - Do not run `seed.ts` on every request in Vercel functions.
+
+### Docker Troubleshooting
+
+- Port `3000` already in use:
+  - Stop the process using port `3000`, or change the API port mapping in `docker-compose.yml`.
+- Port `5432` already in use:
+  - Stop local PostgreSQL, or change the DB port mapping in `docker-compose.yml`.
+- DB healthcheck timeout / API not starting:
+  - Run `docker compose logs db` and `docker compose logs api` to inspect startup errors.
+  - Retry with clean state: `docker compose down -v` then `docker compose up --build`.
+- Prisma migration/seed errors in container:
+  - Ensure `DATABASE_URL` in compose points to `db` service hostname.
+  - Rebuild images after schema changes: `docker compose up --build`.
+
 ## Authentication
 
 Protected routes require:
@@ -76,6 +126,7 @@ API error:
   - `name`: string (min 2, max 100)
   - `password`: min 8, must include uppercase, lowercase, number
 - Purpose: Register user and return JWT
+- Role assignment rule: If this is the first user in the system, role is `ADMIN`; otherwise role is `VIEWER`.
 - Success: `201`
 
 ```json
