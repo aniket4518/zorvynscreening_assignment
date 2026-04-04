@@ -10,7 +10,7 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log("🌱 Seeding database...");
+  console.log("Seeding database...");
 
   // Seed categories
   const incomeCategories = ["Salary", "Freelance", "Investment"];
@@ -41,7 +41,7 @@ async function main() {
     });
   }
 
-  console.log("✅ Categories seeded");
+  console.log("Categories seeded");
 
   // Seed default admin user
   const hashedPassword = await bcrypt.hash("admin123", 10);
@@ -58,13 +58,13 @@ async function main() {
     },
   });
 
-  console.log("✅ Admin user seeded (admin@finance.app / admin123)");
-  console.log("🎉 Seeding complete!");
+  console.log("Admin user seeded (admin@finance.app / admin123)");
+  console.log("Seeding complete!");
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Seed error:", e);
+    console.error("Seed error:", e);
     process.exit(1);
   })
   .finally(async () => {

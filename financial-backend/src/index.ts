@@ -22,7 +22,10 @@ const globalLimiter = rateLimit({
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { success: false, message: "Too many requests, please try again later" },
+  message: {
+    success: false,
+    message: "Too many requests, please try again later",
+  },
 });
 
 const authLimiter = rateLimit({
@@ -30,14 +33,23 @@ const authLimiter = rateLimit({
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { success: false, message: "Too many auth attempts, please try again later" },
+  message: {
+    success: false,
+    message: "Too many auth attempts, please try again later",
+  },
 });
 
 app.use(globalLimiter);
 
 // Health check
 app.get("/api/health", (_req, res) => {
-  res.status(200).json({ success: true, message: "Server is running", timestamp: new Date().toISOString() });
+  res
+    .status(200)
+    .json({
+      success: true,
+      message: "Server is running",
+      timestamp: new Date().toISOString(),
+    });
 });
 
 // Routes
@@ -50,8 +62,8 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {
-  console.log(`🚀 Finance Backend running on http://localhost:${PORT}`);
-  console.log(`📋 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`Finance Backend running on http://localhost:${PORT}`);
+  console.log(`Health check: http://localhost:${PORT}/api/health`);
 });
 
 export default app;

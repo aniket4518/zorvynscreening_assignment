@@ -224,8 +224,11 @@ Common errors:
 
 - Access: `ADMIN`
 - Params: `id` positive integer
-- Purpose: Delete user and write audit log
+- Purpose: Delete user. Admin accounts can only be self-deleted; admins cannot delete other admins.
 - Success: `204` (no body)
+- Errors:
+  - `403` actor is `ADMIN` and target is a different `ADMIN`
+  - `404` user not found
 
 ### PATCH /api/users/:id/role
 

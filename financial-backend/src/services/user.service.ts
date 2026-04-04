@@ -110,7 +110,16 @@ export async function updateUser(
 }
 
 export async function deleteUser(adminId: number, id: number) {
-  await getUserById(id); // ensure exists
+  const targetUser = await getUserById(id); // ensure exists
+
+  if (targetUser.role === "ADMIN" && adminId !== id) {
+    throw ApiError.forbidden("Admins cannot delete other admin accounts");
+  }
+
+  if (adminId === id) {
+    await prisma.user.delete({ where: { id } });
+    return;
+  }
 
   await prisma.$transaction([
     prisma.auditLog.create({
